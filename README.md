@@ -20,6 +20,11 @@ https://groups.google.com/forum/#!forum/brotli
 
 ### Build instructions
 
+#### Esp32 fork
+
+Jusr go to test and compile the cpp example provided. Only tested for decompression, only tested in ESP32 but I think should work in a 8266 board too. There is a platformio.ini ready with this library repository in lib_deps
+Have fun with it and if you make further tests I will appreciate if you send me a short message to my twitter @martinfasani or here on github.
+
 #### Autotools-style CMake
 
 [configure-cmake](https://github.com/nemequ/configure-cmake) is an
