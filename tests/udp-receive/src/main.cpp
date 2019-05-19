@@ -1,3 +1,12 @@
+/**
+ * Example of UDP receive plus Brotli decompress
+ * Quick and dirty since the right way to do it is to send the decompression xTaskCreatePinnedToCore
+ * instead of the loop() variable exchange. But it's mean just as a proof-of-concept
+ * To send a brotli compressed file demo use:
+  
+   cat ../144.txt.br |nc -w1 -u ESP_IP_ADDRESS 1234
+
+ */
 #include "WiFi.h"
 #include "AsyncUDP.h"
 #include "brotli/decode.h"
@@ -11,9 +20,9 @@ uint8_t * compressed;
 // Brotli decompression buffer
 size_t bufferLength = 2000;
 BrotliDecoderResult brotli;
-
-      size_t receivedLength;
-      bool uncompress = false;
+// Temporary variables
+size_t receivedLength;
+bool uncompress = false;
 /**
  * Generic message printer. Modify this if you want to send this messages elsewhere (Display)
  */
@@ -74,8 +83,6 @@ void setup()
 
 void loop()
 {
-    delay(100);
-    // Do nothing
     if (uncompress) {
       uint8_t * brOutBuffer = (uint8_t*)malloc(bufferLength);  
       
@@ -94,7 +101,8 @@ void loop()
         printMessage("Uncompressing:");
         Serial.printf("%.*s\n", bufferLength, brOutBuffer);
 
-           free(brOutBuffer);
-           uncompress = false;
+        free(brOutBuffer);
+        uncompress = false;
     }
+    delay(1);
 }
