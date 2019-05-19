@@ -1,7 +1,6 @@
 /**
  * Example of UDP receive plus Brotli decompress
- * Quick and dirty since the right way to do it is to send the decompression xTaskCreatePinnedToCore
- * instead of the loop() variable exchange. But it's mean just as a proof-of-concept
+ * Jst as a proof-of-concept, do not use without proper testing
  * To send a brotli compressed file demo use:
   
    cat ../144.txt.br |nc -w1 -u ESP_IP_ADDRESS 1234
@@ -11,9 +10,10 @@
 #include "AsyncUDP.h"
 #include "brotli/decode.h"
 const char * ssid = "KabelBox-A210";
-const char * password = "";
+const char * password = "14237187131701431551";
 
 AsyncUDP udp;
+TaskHandle_t brotliTask;
 
 boolean debugMode = true;
 uint8_t * compressed;
@@ -35,6 +35,30 @@ void printMessage(String message, bool newline = true)
       Serial.print(message);
     }
    }
+}
+
+void brTask( void * pvParameters ){
+    uint8_t * brOutBuffer = (uint8_t*)malloc(bufferLength);  
+      
+      brotli = BrotliDecoderDecompress(
+        receivedLength,
+        (const uint8_t *)compressed,
+        &bufferLength,
+        brOutBuffer);
+        //free(compressed);
+
+        printMessage("Unbrotli result: "+String(brotli)); // Should return 1 on correct decompression
+        
+        if (brotli == 0) {
+          printMessage("Decompresion failed");
+        }
+        printMessage("Uncompressing:");
+        Serial.printf("%.*s\n", bufferLength, brOutBuffer);
+
+        free(brOutBuffer);
+        // https://www.freertos.org/implementing-a-FreeRTOS-task.html
+        // If it is necessary for a task to exit then have the task call vTaskDelete( NULL )
+        vTaskDelete( NULL );
 }
 
 void setup()
@@ -75,6 +99,16 @@ void setup()
           //Serial.print(conv);Serial.print(",");
       }
         uncompress = true;
+
+          xTaskCreatePinnedToCore(
+                    brTask,   /* Task function. */
+                    "uncompress",     /* name of task. */
+                    20000,       /* Stack size of task */
+                    compressed,  /* parameter of the task */
+                    9,           /* priority of the task */
+                    &brotliTask,      /* Task handle to keep track of created task */
+                    0);          /* pin task to core 1 */
+
         //reply to the client
             packet.printf("Received %u bytes", packet.length());
         }); 
@@ -83,26 +117,6 @@ void setup()
 
 void loop()
 {
-    if (uncompress) {
-      uint8_t * brOutBuffer = (uint8_t*)malloc(bufferLength);  
-      
-      brotli = BrotliDecoderDecompress(
-        receivedLength,
-        (const uint8_t *)compressed,
-        &bufferLength,
-        brOutBuffer);
-        free(compressed);
-
-        printMessage("Unbrotli result: "+String(brotli)); // Should return 1 on correct decompression
-        
-        if (brotli == 0) {
-          printMessage("Decompresion failed");
-        }
-        printMessage("Uncompressing:");
-        Serial.printf("%.*s\n", bufferLength, brOutBuffer);
-
-        free(brOutBuffer);
-        uncompress = false;
-    }
-    delay(1);
+    delay(2);
 }
+
