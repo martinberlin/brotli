@@ -10,7 +10,7 @@
 #include "AsyncUDP.h"
 #include "brotli/decode.h"
 const char * ssid = "KabelBox-A210";
-const char * password = "14237187131701431551";
+const char * password = "";
 
 AsyncUDP udp;
 TaskHandle_t brotliTask;
