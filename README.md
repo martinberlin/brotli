@@ -22,8 +22,13 @@ https://groups.google.com/forum/#!forum/brotli
 
 #### Esp32 fork
 
-Jusr go to test and compile the cpp example provided. Only tested for decompression, only tested in ESP32 but I think should work in a 8266 board too. There is a platformio.ini ready with this library repository in lib_deps
-Have fun with it and if you make further tests I will appreciate if you send me a short message to my twitter @martinfasani or here on github.
+Just compile the cpp example provided in /tests folder in a ESP32 board. Only tested for decompression, only tested in ESP32 microchips but I think should work in a 8266 board too. There is a platformio.ini ready with this library repository in lib_deps.
+To decompress the bytes array provided:
+
+    uint8_t compressed[] = {27, 175, 4,248, 141, 148, 110, 222, 68, 85, 134, 214, 32, 33, 108, 111, 106, 22, 199, 106, 129, 12, 168, 102, 47, 4};
+
+Takes about 95 milliseconds in the ESP32 Wroom 32 board that I'm using for test (Lolin 32)
+Have fun with it and if you make further tests I will appreciate if you send me a short message to my twitter @martinfasani or here on github. Please add an Issue if you need more examples and fork this to provide your own.
 
 #### Autotools-style CMake
 
