@@ -35,22 +35,22 @@ void setup() {
   String fileName = "/144.txt";
 
   Serial.println("Reading file '"+fileName+"' on SPIFFS");
-  
+  char *inBuffer = new char[2000];
 
  if (!SPIFFS.begin()) {
    Serial.println("Could not mount file system");
  }
-  if (!SPIFFS.exists(fileName)) {
+  if (SPIFFS.exists(fileName)) {
+    File file = SPIFFS.open(fileName, "r"); 
+    fileSize = file.size();
+    file.readBytes(inBuffer, fileSize);
+    file.close();
+    Serial.printf("%d bytes read into inBuffer", fileSize);
+  } else {
     Serial.println("Could not read "+fileName+" from SPIFFS");
     return;
   }
   
-    File file = SPIFFS.open(fileName, "r"); 
-    fileSize = file.size();
-    char *inBuffer = new char[fileSize];
-    file.readBytes(inBuffer, fileSize);
-    file.close();
-    Serial.printf("%d bytes read into inBuffer", fileSize);
   // Print out inBuffer to serial
     for ( int i = 0; i < fileSize; i++ ) {
         uint8_t conv = (int) inBuffer[i];
