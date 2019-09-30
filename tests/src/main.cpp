@@ -48,14 +48,14 @@ void setup() {
     char *inFileBuffer = new char[fileSize];
     file.readBytes(inFileBuffer, fileSize);
     file.close();
-    Serial.printf("%d bytes read into inBuffer", fileSize);
+    Serial.printf("%d bytes read into inBuffer: ", fileSize);
 
     uint8_t inBuffer [fileSize];
       // Print out inBuffer to serial
-    /* for ( int i = 0; i < fileSize; i++ ) {
+    for ( int i = 0; i < fileSize; i++ ) {
         inBuffer[i] = (int) inFileBuffer[i];
         Serial.print(inBuffer[i]);Serial.print(",");
-    } */
+    } 
 
   int quality = 5; /* 1 less to 9 max. compression */
   size_t encodedSize;
