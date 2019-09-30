@@ -30,7 +30,7 @@ void setup() {
   int timespent = millis()-time;
   Serial.printf("Decompression took %d milliseconds.", timespent);
 
-  String fileName = "/144.txt";
+  String fileName = "/144.txt.br";
 
   Serial.println("Reading file '"+fileName+"' on SPIFFS");
   
@@ -45,40 +45,41 @@ void setup() {
 
  File file = SPIFFS.open(fileName, "r"); 
     fileSize = file.size();
-    char *inBuffer = new char[fileSize];
-    file.readBytes(inBuffer, fileSize);
+    char *inFileBuffer = new char[fileSize];
+    file.readBytes(inFileBuffer, fileSize);
     file.close();
     Serial.printf("%d bytes read into inBuffer", fileSize);
 
+    uint8_t inBuffer [fileSize];
       // Print out inBuffer to serial
     /* for ( int i = 0; i < fileSize; i++ ) {
-        uint8_t conv = (int) inBuffer[i];
-        Serial.print(conv);Serial.print(",");
+        inBuffer[i] = (int) inFileBuffer[i];
+        Serial.print(inBuffer[i]);Serial.print(",");
     } */
 
-  int quality = 1; /* 1 less to 9 max. compression */
+  int quality = 5; /* 1 less to 9 max. compression */
   size_t encodedSize;
-  uint8_t outBuffer[3000];
-  int lgwin = 19;
+  uint8_t outBuffer[900];
+  int lgwin = 11;
   
-bool returnValue = false;
 
+Serial.println();
+Serial.println("Heap: "+String(ESP.getFreeHeap())); 
 //***ERROR*** A stack overflow in task loopTask has been detected.
 //abort() was called at PC 0x4008b980 on core 1
-
-  returnValue = BrotliEncoderCompress(
+  /* BrotliEncoderCompress(
       quality,  
       lgwin, 
-      BrotliEncoderMode(BROTLI_MODE_GENERIC),
+      BrotliEncoderMode::BROTLI_MODE_FONT,
       fileSize, 
-      (const uint8_t *)inBuffer,     
+      (const uint8_t *)inFileBuffer,     
       &encodedSize,
-      outBuffer);  
-  
-  Serial.println(returnValue);
+      outBuffer);   */
 
+//TODO: Try: 
+//BrotliEncoderCompressStream()
 }
  
 void loop() {
-  delay(1);
+  delay(100);
 }
