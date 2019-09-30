@@ -33,43 +33,47 @@ void setup() {
   String fileName = "/144.txt";
 
   Serial.println("Reading file '"+fileName+"' on SPIFFS");
-  char *inBuffer = new char[2000];
+  
 
  if (!SPIFFS.begin()) {
    Serial.println("Could not mount file system");
  }
-  if (SPIFFS.exists(fileName)) {
-    File file = SPIFFS.open(fileName, "r"); 
-    fileSize = file.size();
-    file.readBytes(inBuffer, fileSize);
-    file.close();
-    Serial.printf("%d bytes read into inBuffer", fileSize);
-  } else {
+  if (!SPIFFS.exists(fileName)) {
     Serial.println("Could not read "+fileName+" from SPIFFS");
-    return;
   }
 
 
-  int quality = 9; /* 1 less to 9 max. compression */
+ File file = SPIFFS.open(fileName, "r"); 
+    fileSize = file.size();
+    char *inBuffer = new char[fileSize];
+    file.readBytes(inBuffer, fileSize);
+    file.close();
+    Serial.printf("%d bytes read into inBuffer", fileSize);
+
+      // Print out inBuffer to serial
+    /* for ( int i = 0; i < fileSize; i++ ) {
+        uint8_t conv = (int) inBuffer[i];
+        Serial.print(conv);Serial.print(",");
+    } */
+
+  int quality = 1; /* 1 less to 9 max. compression */
   size_t encodedSize;
   uint8_t outBuffer[3000];
-  int lgwin = DEFAULT_LGWIN;
-  size_t input_size = sizeof(inBuffer);
-
-Serial.printf("%d bytes input_size", input_size);
+  int lgwin = 19;
+  
 bool returnValue = false;
 
 //***ERROR*** A stack overflow in task loopTask has been detected.
 //abort() was called at PC 0x4008b980 on core 1
 
-/* returnValue = BrotliEncoderCompress(
+  returnValue = BrotliEncoderCompress(
       quality,  
       lgwin, 
       BrotliEncoderMode(BROTLI_MODE_GENERIC),
       fileSize, 
       (const uint8_t *)inBuffer,     
       &encodedSize,
-      outBuffer);  */
+      outBuffer);  
   
   Serial.println(returnValue);
 
