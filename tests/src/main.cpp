@@ -19,30 +19,32 @@ void setup() {
    Serial.println("Could not mount file system");
  }
 
-    String fileName = "/144-rgbw-2-on.bin";
+    String fileName = "/144-rgbw-2-on.bin.br";
     file = SPIFFS.open(fileName, "r"); 
     fileSize = file.size();
     char *inBuffer = new char[fileSize];
     file.readBytes(inBuffer, fileSize);
     file.close();
-    Serial.printf("%d bytes read into inBuffer", fileSize);
+    Serial.printf("%d bytes read into inBuffer\n", fileSize);
 
   int time = millis();
-  //uint8_t compressed[] = {27, 175, 4,248, 141, 148, 110, 222, 68, 85, 134, 214, 32, 33, 108, 111, 106, 22, 199, 106, 129, 12, 168, 102, 47, 4};
- 
+  // Uncomment for easy test withouth SPIFFS
+  //uint8_t inBuffer[] = {27, 175, 4,248, 141, 148, 110, 222, 68, 85, 134, 214, 32, 33, 108, 111, 106, 22, 199, 106, 129, 12, 168, 102, 47, 4};
   uint8_t buffer [2000];
- 
   size_t output_length = sizeof(buffer);
- 
+
   BrotliDecoderDecompress(
-    sizeof(inBuffer),
+    fileSize,
     (const uint8_t *)inBuffer,
     &output_length,
     buffer);
  
   Serial.printf("%.*s\n", output_length, buffer);
+
   int timespent = millis()-time;
-  Serial.printf("Decompression took %d milliseconds.", timespent);
+
+  Serial.printf("%d bytes after decompression\n", output_length);
+  Serial.printf("Decompression took %d milliseconds\n", timespent);
 /*
   String fileName = "/144.txt";
 
