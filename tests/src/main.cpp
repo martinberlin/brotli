@@ -18,7 +18,7 @@ bool decompressFile(String fileName, bool outputBytes=false) {
     return false;
   }
   bool brotliStatus = true;
-  int readFsTime = millis();
+  int readFsTime = micros();
   file = SPIFFS.open(fileName, "r"); 
   fileSize = file.size();
   char *inBuffer = new char[fileSize];
@@ -28,7 +28,7 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   Serial.printf("%d bytes read into inBuffer from: ", fileSize);
   Serial.print(fileName+ "\n");
 
-  int decompressTime = millis();
+  int decompressTime = micros();
   // Uncomment for easy test withouth SPIFFS
   //uint8_t inBuffer[] = {27, 175, 4,248, 141, 148, 110, 222, 68, 85, 134, 214, 32, 33, 108, 111, 106, 22, 199, 106, 129, 12, 168, 102, 47, 4};
   
@@ -43,9 +43,9 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   
   delete(inBuffer);
 
-  int timespent = millis()-decompressTime;
+  int timespent = micros()-decompressTime;
 
-  Serial.printf("Decompression took %d milliseconds. File read took: %d milliseconds\n", timespent, decompressTime-readFsTime);
+  Serial.printf("Decompression took %d micros. File read took: %d micros\n", timespent, decompressTime-readFsTime);
   Serial.printf("%d bytes after decompression. Estimated pixels RGBw: %d\n", output_length, (output_length-5)/4);
   if (outputBytes) {
     for ( int i = 0; i < output_length; i++ ) {
