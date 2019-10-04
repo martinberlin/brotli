@@ -6,6 +6,10 @@ buildfiles/
 dist/
 **/bazel-*
 
+# Platformio
+.pio
+.vscode 
+
 # Python
 __pycache__/
 *.py[cod]
