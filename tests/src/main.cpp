@@ -24,16 +24,16 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   char *inBuffer = new char[fileSize];
   file.readBytes(inBuffer, fileSize);
   file.close();
-  Serial.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-  Serial.printf("%d bytes read into inBuffer from: ", fileSize);
-  Serial.print(fileName+ "\n");
+  
+  //Serial.printf("%d bytes read into inBuffer from: ", fileSize);
+  //Serial.print(fileName+ "\n");
 
   int decompressTime = micros();
   // Uncomment for easy test withouth SPIFFS
   //uint8_t inBuffer[] = {27, 175, 4,248, 141, 148, 110, 222, 68, 85, 134, 214, 32, 33, 108, 111, 106, 22, 199, 106, 129, 12, 168, 102, 47, 4};
   
-  uint8_t buffer[2000];
-  size_t output_length = sizeof(buffer);
+  uint8_t *buffer = new uint8_t[30000];
+  size_t output_length = 30000;
 
   brotliStatus = BrotliDecoderDecompress(
     fileSize,
@@ -42,11 +42,20 @@ bool decompressFile(String fileName, bool outputBytes=false) {
     buffer);
   
   delete(inBuffer);
+  delete(buffer);
 
   int timespent = micros()-decompressTime;
 
-  Serial.printf("Decompression took %d micros. File read took: %d micros\n", timespent, decompressTime-readFsTime);
-  Serial.printf("%d bytes after decompression. Estimated pixels RGBw: %d\n", output_length, (output_length-5)/4);
+  //Serial.printf("Decompression took %d micros. File read took: %d micros\n", timespent, decompressTime-readFsTime);
+  //Serial.printf("%d bytes after decompression. Estimated pixels RGBw: %d\n", output_length, (output_length-5)/4);
+  int pixelslen = (output_length-5)/4;
+
+  Serial.print(fileName+";"+String(pixelslen)+";"+String(fileSize)+";");
+  Serial.print(String(output_length)+";");
+  Serial.print(String(timespent)+";");
+  Serial.print(String((pixelslen/300)*9)+";");
+  Serial.println();
+
   if (outputBytes) {
     for ( int i = 0; i < output_length; i++ ) {
       uint8_t conv = (int) buffer[i];
@@ -119,10 +128,16 @@ void setup() {
    Serial.println("Could not mount file system");
  }
 
-  decompressFile("/144-rgbw-2-on.bin.br", true);
-  
-  
-  
+Serial.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
+Serial.println("Filename;Pixels;Compressed size(byte);Decompressed size;Decomp. micros;Neopixel process millis;");
+
+  decompressFile("/500-1.bin.br");
+  decompressFile("/500-r.bin.br");
+  decompressFile("/1000-1.bin.br");
+  decompressFile("/1000-r.bin.br");
+  decompressFile("/2000-1.bin.br");
+  decompressFile("/4000-1.bin.br");
+  decompressFile("/6000-1.bin.br");
   // This one still does not work:
   //compressFile("/144-rgbw-2-on.bin", false);
 }
