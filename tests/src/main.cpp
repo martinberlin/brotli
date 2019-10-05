@@ -6,8 +6,8 @@ extern "C" {
 #include "FS.h"
 #include "SPIFFS.h"
 
-#define DEFAULT_LGWIN 11
-#define BROTLI_BUFFER 40000;
+#define DEFAULT_LGWIN 19
+#define BROTLI_BUFFER 10000;
 size_t fileSize;
 
 File file;
@@ -85,18 +85,19 @@ bool compressFile(String fileName, bool outputBytes=false) {
   Serial.print(fileName+ "\n");
 
 // 1 less to 9 max. compression 
-  int quality = 9; 
-  int bufferSize = 30000;
+  int quality = 1; 
+  int bufferSize = BROTLI_BUFFER;
   uint8_t *buffer = new uint8_t[bufferSize];
   size_t encodedSize = bufferSize;
-  int lgwin = DEFAULT_LGWIN;
+  int lgwin = 2;
 
 
 Serial.println("Calling BrotliEncoderCompress");
 Serial.printf("Compression params:\n%d quality\n%d lgwin", quality, lgwin);
-delay(10);
-// ***ERROR*** A stack overflow in task loopTask has been detected.
-// abort() was called at PC 0x4008b980 on core 1
+
+// ***ERROR*** lgwinabort() increasing quality >1
+int decompressTime = micros();
+
    brotliStatus = BrotliEncoderCompress(
     quality,  
     lgwin, 
@@ -106,8 +107,12 @@ delay(10);
     &encodedSize,
     buffer);  
 
-  delete(inBuffer);
+  int timespent = micros()-decompressTime;
 
+  delete(inBuffer);
+  delete(buffer);
+  Serial.println();
+  Serial.printf("%d microseconds spend compressing\n", timespent);
   Serial.printf("%d bytes after compression\n", encodedSize);
 /* 
   if (outputBytes) {
@@ -139,7 +144,7 @@ Serial.println("Filename;Pixels;Compressed size(byte);Decompressed size;Decomp. 
   decompressFile("/4000-1.bin.br");
   decompressFile("/6000-1.bin.br"); */
   // This one still does not work:
-  compressFile("/500-1.bin");
+  compressFile("/144.txt");
 }
  
 void loop() {
