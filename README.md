@@ -23,11 +23,8 @@ https://groups.google.com/forum/#!forum/brotli
 
 #### Esp32 fork
 
-Just compile the cpp example provided in /tests folder in a ESP32 board. Only tested for decompression, only tested in ESP32 microchips but I think should work in a 8266 board too. There is a platformio.ini ready with this library repository in lib_deps.
-For decompression examples and time measurements please open the /tests directory and check the Readme. There are the easy build instructions and some statistics.
+Just compile the cpp example provided in /tests folder in a ESP32 board. Only tested in ESP32 microchips but I think should work in a 8266 board too. For decompression/compression examples and time measurements please open the /tests directory and check the Readme. There are the easy build instructions and some statistics.
 There is a platformio.ini file in this directory so to build just run in the terminal:
-
-    pio run 
 
     // To flash the FS data folder:
     pio run --target uploadfs
@@ -35,7 +32,7 @@ There is a platformio.ini file in this directory so to build just run in the ter
     // To flash the micro:
     pio run --target upload
 
-Note: The decompression is working but so far could not make run successfully the BrotliEncoderCompress method.
+Please note that the decompression is working fine but so far could not make run successfully the BrotliEncoderCompress method with a quality higher than 1. It compresses without errors so far and quite good even with this quality issue.
 Have fun with it and if you make further tests I will appreciate if you send me a short message to my twitter [@martinfasani](https://twitter.com/martinfasani) or here on github. Please add an Issue if you need more examples and fork this to provide your own.
 
 #### Autotools-style CMake
