@@ -6,8 +6,8 @@ extern "C" {
 #include "FS.h"
 #include "SPIFFS.h"
 
-#define DEFAULT_LGWIN 19
-#define BROTLI_BUFFER 4000;
+#define DEFAULT_LGWIN 11
+#define BROTLI_BUFFER 40000;
 size_t fileSize;
 
 File file;
@@ -86,9 +86,9 @@ bool compressFile(String fileName, bool outputBytes=false) {
 
 // 1 less to 9 max. compression 
   int quality = 9; 
-  
-  uint8_t outBuffer[14000];
-  size_t encodedSize = sizeof(outBuffer);
+  int bufferSize = 30000;
+  uint8_t *buffer = new uint8_t[bufferSize];
+  size_t encodedSize = bufferSize;
   int lgwin = DEFAULT_LGWIN;
 
 
@@ -104,19 +104,19 @@ delay(10);
     fileSize, 
     (const uint8_t *)inBuffer,     
     &encodedSize,
-    outBuffer);  
+    buffer);  
 
   delete(inBuffer);
 
   Serial.printf("%d bytes after compression\n", encodedSize);
-
+/* 
   if (outputBytes) {
     for ( int i = 0; i < encodedSize; i++ ) {
-      uint8_t conv = (int) outBuffer[i];
+      uint8_t conv = (int) buffer[i];
       Serial.print(conv);Serial.print(",");
     }
-    Serial.printf("%.*s\n", encodedSize, outBuffer);
-  } 
+    Serial.printf("%.*s\n", encodedSize, buffer);
+  }  */
 
   return brotliStatus;
 }
@@ -131,15 +131,15 @@ void setup() {
 Serial.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
 Serial.println("Filename;Pixels;Compressed size(byte);Decompressed size;Decomp. micros;Neopixel process millis;");
 
-  decompressFile("/500-1.bin.br");
+/*   decompressFile("/500-1.bin.br");
   decompressFile("/500-r.bin.br");
   decompressFile("/1000-1.bin.br");
   decompressFile("/1000-r.bin.br");
   decompressFile("/2000-1.bin.br");
   decompressFile("/4000-1.bin.br");
-  decompressFile("/6000-1.bin.br");
+  decompressFile("/6000-1.bin.br"); */
   // This one still does not work:
-  //compressFile("/144-rgbw-2-on.bin", false);
+  compressFile("/500-1.bin");
 }
  
 void loop() {
