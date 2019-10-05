@@ -6,8 +6,8 @@ extern "C" {
 #include "FS.h"
 #include "SPIFFS.h"
 
-#define DEFAULT_LGWIN 19
-#define BROTLI_BUFFER 10000;
+#define DEFAULT_LGWIN 22
+#define BROTLI_BUFFER 30000;
 size_t fileSize;
 
 File file;
@@ -45,11 +45,10 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   delete(buffer);
 
   int timespent = micros()-decompressTime;
+  int pixelslen = (output_length-5)/4;
 
   //Serial.printf("Decompression took %d micros. File read took: %d micros\n", timespent, decompressTime-readFsTime);
   //Serial.printf("%d bytes after decompression. Estimated pixels RGBw: %d\n", output_length, (output_length-5)/4);
-  int pixelslen = (output_length-5)/4;
-
   Serial.print(fileName+";"+String(pixelslen)+";"+String(fileSize)+";");
   Serial.print(String(output_length)+";");
   Serial.print(String(timespent)+";");
@@ -84,19 +83,20 @@ bool compressFile(String fileName, bool outputBytes=false) {
   Serial.printf("%d bytes read into inBuffer from: ", fileSize);
   Serial.print(fileName+ "\n");
 
-// 1 less to 9 max. compression 
+  // 1 less to 11 max. compression. With more than 1 it hangs on ESP32
   int quality = 1; 
+  int lgwin = DEFAULT_LGWIN;
   int bufferSize = BROTLI_BUFFER;
   uint8_t *buffer = new uint8_t[bufferSize];
   size_t encodedSize = bufferSize;
-  int lgwin = 2;
+  
 
 
-Serial.println("Calling BrotliEncoderCompress");
-Serial.printf("Compression params:\n%d quality\n%d lgwin", quality, lgwin);
+  Serial.println("Calling BrotliEncoderCompress");
+  Serial.printf("Compression params:\n%d quality\n%d lgwin", quality, lgwin);
 
-// ***ERROR*** lgwinabort() increasing quality >1
-int decompressTime = micros();
+  // ***ERROR*** lgwinabort() increasing quality >1
+  int decompressTime = micros();
 
    brotliStatus = BrotliEncoderCompress(
     quality,  
@@ -114,14 +114,14 @@ int decompressTime = micros();
   Serial.println();
   Serial.printf("%d microseconds spend compressing\n", timespent);
   Serial.printf("%d bytes after compression\n", encodedSize);
-/* 
+ 
   if (outputBytes) {
     for ( int i = 0; i < encodedSize; i++ ) {
       uint8_t conv = (int) buffer[i];
       Serial.print(conv);Serial.print(",");
     }
     Serial.printf("%.*s\n", encodedSize, buffer);
-  }  */
+  }  
 
   return brotliStatus;
 }
@@ -144,7 +144,11 @@ Serial.println("Filename;Pixels;Compressed size(byte);Decompressed size;Decomp. 
   decompressFile("/4000-1.bin.br");
   decompressFile("/6000-1.bin.br"); */
   // This one still does not work:
-  compressFile("/144.txt");
+  compressFile("/144.txt", true);
+  compressFile("/500-1.bin");
+  compressFile("/500-r.bin");
+  compressFile("/1000-1.bin");
+  compressFile("/1000-r.bin");
 }
  
 void loop() {
