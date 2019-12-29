@@ -1,40 +1,17 @@
-extern "C" {
 #include <brotli/decode.h>
-#include <brotli/encode.h>
-}
+//#include <brotli/encode.h>
+
 #include "Arduino.h"
 #include "FS.h"
-#include "SPIFFS.h"
-
+#ifdef ESP32
+  #include "SPIFFS.h"
+#endif
 #define DEFAULT_LGWIN 22
 #define BROTLI_BUFFER 30000;
 size_t fileSize;
 
 File file;
-
-uint8_t * decompressBuffer(uint8_t *inBuffer, size_t inputSize) {
-  int bufferSize = BROTLI_BUFFER;
-  uint8_t * buffer = new uint8_t[bufferSize];
-  size_t output_length = bufferSize;
-  Serial.println("decompressBuffer() - - - - - - - - - - - - - - - - - - - - - - - - - -");
-
-  bool brotliStatus;
-  brotliStatus = BrotliDecoderDecompress(
-    inputSize,
-    (const uint8_t *)inBuffer,
-    &output_length,
-    buffer);
-
-  Serial.println();
-  Serial.printf("status: %d\n", brotliStatus);
-  Serial.println("Decompress output: - - - - - - - - - - - - - - - - - - - - - - - - - -");
-
-  Serial.printf("%.*s\n", output_length, buffer);
-  
-  return buffer;
-}
-
-bool decompressFile(String fileName, bool outputBytes=false) {
+ bool decompressFile(String fileName, bool outputBytes=false) {
   if (!SPIFFS.exists(fileName)) {
     Serial.println(fileName+ " not found. Did you execute: pio run -t uploadfs");
     return false;
@@ -45,9 +22,6 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   char *inBuffer = new char[fileSize];
   file.readBytes(inBuffer, fileSize);
   file.close();
-  
-  //Serial.printf("%d bytes read into inBuffer from: ", fileSize);
-  //Serial.print(fileName+ "\n");
 
   int decompressTime = micros();
   // Uncomment for easy test withouth SPIFFS
@@ -86,69 +60,6 @@ bool decompressFile(String fileName, bool outputBytes=false) {
   return brotliStatus;
 }
 
-
-uint8_t * compressFile(String fileName, bool outputBytes=false) {
-  
-  int lgwin = DEFAULT_LGWIN;
-  int bufferSize = BROTLI_BUFFER;
-  uint8_t *buffer = new uint8_t[bufferSize];
-
-  if (!SPIFFS.exists(fileName)) {
-    Serial.println(fileName+ " not found. Did you execute: pio run -t uploadfs");
-    return buffer;
-  }
-  Serial.println("Reading file '"+fileName+"' from FS");
-
-  file = SPIFFS.open(fileName, "r"); 
-  fileSize = file.size();
-  char *inBuffer = new char[fileSize];
-  file.readBytes(inBuffer, fileSize);
-  file.close();
-  Serial.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-  Serial.printf("%d bytes read into inBuffer from: ", fileSize);
-  Serial.print(fileName+ "\n");
-
-  // 1 less to 11 max. compression. With more than 1 it hangs on ESP32
-  int quality = 1; 
-  size_t encodedSize = bufferSize;
-
-  Serial.println("Calling BrotliEncoderCompress");
-  Serial.printf("Compression params:\n%d quality\n%d lgwin", quality, lgwin);
-
-  // ***ERROR*** lgwinabort() increasing quality >1
-  int decompressTime = micros();
-  bool brotliStatus;
-
-   brotliStatus = BrotliEncoderCompress(
-    quality,  
-    lgwin, 
-    BrotliEncoderMode::BROTLI_MODE_GENERIC,
-    fileSize, 
-    (const uint8_t *)inBuffer,     
-    &encodedSize,
-    buffer);  
-
-  int timespent = micros()-decompressTime;
-
-  delete(inBuffer);
-  delete(buffer);
-  Serial.println();
-  Serial.printf("status: %d\n", brotliStatus);
-  Serial.printf("%d microseconds spend compressing\n", timespent);
-  Serial.printf("%d bytes after compression\n", encodedSize);
- 
-  if (outputBytes) {
-    Serial.println("Compressed bytes preview:");
-    for ( int i = 0; i < encodedSize; i++ ) {
-      uint8_t conv = (int) buffer[i];
-      Serial.print(conv);Serial.print(",");
-    }
-    Serial.printf("%.*s\n", encodedSize, buffer);
-  }  
-
-  return buffer;
-}
-
 void setup() {
   Serial.begin(115200);
   
@@ -160,29 +71,20 @@ Serial.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
 Serial.println("Filename;Pixels;Compressed size(byte);Decompressed size;Decomp. micros;Neopixel process millis;");
 
 // Decompress example with other files (Outputs a small CSV)
-/*   decompressFile("/500-1.bin.br");
+   decompressFile("/500-1.bin.br");
   decompressFile("/500-r.bin.br");
   decompressFile("/1000-1.bin.br");
   decompressFile("/1000-r.bin.br");
   decompressFile("/2000-1.bin.br");
   decompressFile("/4000-1.bin.br");
-  decompressFile("/6000-1.bin.br"); */
+  decompressFile("/6000-1.bin.br"); 
   
   // Read a file from FS
   int bufferSize = BROTLI_BUFFER;
-  uint8_t *inBuffer = new uint8_t[bufferSize];
-  inBuffer = compressFile("/sensors.json");
+  uint8_t *outBytes = new uint8_t[bufferSize];
   
   // Decompress the compressed bytes output
-  decompressBuffer(inBuffer, bufferSize);
- 
-  // Note: That bufferSize should be ^ ideally the size of the inBuffer (349 in case of that file)
-
-
-  compressFile("/500-1.bin");
-  compressFile("/500-r.bin");
-  compressFile("/1000-1.bin");
-  compressFile("/1000-r.bin");
+  //decompressFile("/144.txt.br", outBytes);
 }
  
 void loop() {
